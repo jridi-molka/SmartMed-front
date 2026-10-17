@@ -1,0 +1,11 @@
+# Secrets : ne jamais commiter
+.env
+.env.*
+!.env.example
+key.properties
+*.jks
+*.keystore
+
+# Système
+.DS_Store
+Thumbs.db
