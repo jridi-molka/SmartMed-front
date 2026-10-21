@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'screens/auth/login_page.dart';
+import 'routes/app_router.dart';
 
 void main() {
   runApp(const SmartMedApp());
@@ -11,7 +11,7 @@ class SmartMedApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'SmartMed',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -30,7 +30,7 @@ class SmartMedApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const LoginPage(),
+      routerConfig: appRouter,
     );
   }
 }

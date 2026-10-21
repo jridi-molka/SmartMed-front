@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/network/api_exception.dart';
+import '../../routes/app_routes.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/app_text_field.dart';
 
@@ -34,9 +36,7 @@ class _LoginPageState extends State<LoginPage> {
         _passwordController.text,
       );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Connexion réussie !')),
-      );
+      context.go(AppRoutes.home);
     } on ApiException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -125,7 +125,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 16),
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () => context.go(AppRoutes.register),
                   child: const Text("Pas de compte ? S'inscrire"),
                 ),
               ],
