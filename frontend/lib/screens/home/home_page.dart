@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
-import '../../core/network/api_exception.dart';
-import '../../models/user.dart';
+import '../../providers/user_provider.dart';
 import '../../routes/app_routes.dart';
 import '../../services/auth_service.dart';
 
@@ -15,47 +15,34 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final _authService = AuthService();
-  User? _user;
-  String? _error;
-  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadUser();
-  }
-
-  Future<void> _loadUser() async {
-    try {
-      final user = await _authService.getMe();
-      if (!mounted) return;
-      setState(() => _user = user);
-    } on ApiException catch (e) {
-      if (!mounted) return;
-      setState(() => _error = e.message);
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _error = 'Impossible de joindre le serveur');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+    context.read<UserProvider>().loadUser();
   }
 
   Future<void> _logout() async {
+    final userProvider = context.read<UserProvider>();
     try {
       await _authService.logout();
     } catch (_) {
       // Le service supprime déjà le token local dans tous les cas.
     }
+    userProvider.clear();
     if (!mounted) return;
     context.go(AppRoutes.login);
   }
 
-  Widget _buildContent() {
-    if (_isLoading) return const CircularProgressIndicator();
-    if (_error != null) return Text(_error!);
+  Widget _buildContent(UserProvider provider) {
+    if (provider.isLoading) return const CircularProgressIndicator();
 
-    final user = _user!;
+    final error = provider.error;
+    if (error != null) return Text(error);
+
+    final user = provider.user;
+    if (user == null) return const SizedBox.shrink();
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -73,6 +60,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<UserProvider>();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('SmartMed'),
@@ -89,7 +78,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: Center(child: _buildContent()),
+      body: Center(child: _buildContent(provider)),
     );
   }
 }

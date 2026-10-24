@@ -24,4 +24,9 @@ class Validators {
     }
     return null;
   }
+
+  static String? optionalPassword(String? value) {
+    if (value == null || value.isEmpty) return null;
+    return password(value);
+  }
 }

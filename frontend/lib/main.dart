@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import 'providers/user_provider.dart';
 import 'routes/app_router.dart';
 
 void main() {
-  runApp(const SmartMedApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => UserProvider(),
+      child: const SmartMedApp(),
+    ),
+  );
 }
 
 class SmartMedApp extends StatelessWidget {

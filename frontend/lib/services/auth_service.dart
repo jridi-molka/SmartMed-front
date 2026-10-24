@@ -48,6 +48,23 @@ class AuthService {
     throw ApiException(_errorMessage(response));
   }
 
+  Future<User> updateMe({String? name, String? password}) async {
+    final body = <String, dynamic>{};
+    if (name != null) body['name'] = name;
+    if (password != null) body['password'] = password;
+
+    final response = await _client.put(
+      ApiConstants.me,
+      body: body,
+      auth: true,
+    );
+
+    if (response.statusCode == 200) {
+      return User.fromJson(jsonDecode(response.body));
+    }
+    throw ApiException(_errorMessage(response));
+  }
+
   Future<void> logout() async {
     try {
       await _client.post(ApiConstants.logout, auth: true);
