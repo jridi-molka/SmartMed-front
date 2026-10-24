@@ -6,6 +6,7 @@ import '../screens/auth/splash_page.dart';
 import '../screens/home/home_page.dart';
 import 'app_routes.dart';
 import '../screens/auth/register_page.dart';
+import '../screens/profile/profile_page.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: AppRoutes.splash,
@@ -37,6 +38,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.register,
       builder: (context, state) => const RegisterPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.profile,
+      builder: (context, state) => const ProfilePage(),
     ),
   ],
 );
