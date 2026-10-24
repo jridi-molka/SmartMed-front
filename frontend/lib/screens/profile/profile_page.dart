@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/network/api_exception.dart';
 import '../../core/utils/validators.dart';
-import '../../models/user.dart';
-import '../../services/auth_service.dart';
+import '../../providers/user_provider.dart';
 import '../../widgets/app_text_field.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -17,17 +17,13 @@ class _ProfilePageState extends State<ProfilePage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _authService = AuthService();
-  User? _user;
-  String? _error;
-  bool _isLoading = true;
   bool _isSaving = false;
   bool _obscurePassword = true;
 
   @override
   void initState() {
     super.initState();
-    _loadUser();
+    _loadProfile();
   }
 
   @override
@@ -43,21 +39,12 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Future<void> _loadUser() async {
-    try {
-      final user = await _authService.getMe();
-      if (!mounted) return;
-      _nameController.text = user.name;
-      setState(() => _user = user);
-    } on ApiException catch (e) {
-      if (!mounted) return;
-      setState(() => _error = e.message);
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _error = 'Impossible de joindre le serveur');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+  Future<void> _loadProfile() async {
+    final provider = context.read<UserProvider>();
+    await provider.loadUser();
+    if (!mounted) return;
+    final user = provider.user;
+    if (user != null) _nameController.text = user.name;
   }
 
   Future<void> _onSavePressed() async {
@@ -67,12 +54,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
     try {
       final newPassword = _passwordController.text;
-      final updated = await _authService.updateMe(
-        name: _nameController.text.trim(),
-        password: newPassword.isEmpty ? null : newPassword,
-      );
+      await context.read<UserProvider>().updateProfile(
+            name: _nameController.text.trim(),
+            password: newPassword.isEmpty ? null : newPassword,
+          );
       if (!mounted) return;
-      setState(() => _user = updated);
       _passwordController.clear();
       _showMessage('Profil mis à jour');
     } on ApiException catch (e) {
@@ -140,11 +126,15 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildContent() {
-    if (_isLoading) return const CircularProgressIndicator();
-    if (_error != null) return Text(_error!);
+  Widget _buildContent(UserProvider provider) {
+    if (provider.isLoading) return const CircularProgressIndicator();
 
-    final user = _user!;
+    final error = provider.error;
+    if (error != null) return Text(error);
+
+    final user = provider.user;
+    if (user == null) return const SizedBox.shrink();
+
     final initial = user.name.isNotEmpty ? user.name[0].toUpperCase() : '?';
 
     return Column(
@@ -190,6 +180,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<UserProvider>();
+
     return Scaffold(
       appBar: AppBar(title: const Text('Mon profil')),
       body: Center(
@@ -197,7 +189,7 @@ class _ProfilePageState extends State<ProfilePage> {
           padding: const EdgeInsets.all(24),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 400),
-            child: _buildContent(),
+            child: _buildContent(provider),
           ),
         ),
       ),

@@ -33,6 +33,11 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> updateProfile({String? name, String? password}) async {
+    _user = await _authService.updateMe(name: name, password: password);
+    notifyListeners();
+  }
+
   void clear() {
     _user = null;
     _error = null;
